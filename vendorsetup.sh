@@ -56,5 +56,5 @@ else
 	fi
 fi
 #
-export OF_MAINTAINER="YFMARCO"
-export FOX_VERSION="R11.6"
+    export OF_MAINTAINER="YFMARCO"
+    export FOX_VERSION="R11.6"

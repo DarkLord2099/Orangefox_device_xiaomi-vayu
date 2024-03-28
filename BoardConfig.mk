@@ -1,6 +1,8 @@
 #
 # Copyright 2018 The Android Open Source Project
 #
+#  Copyright (C) 2021-2024 The OrangeFox Recovery Project
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,18 +18,19 @@
 
 # Architecture
 TARGET_ARCH := arm64
-TARGET_ARCH_VARIANT := armv8-a
+TARGET_ARCH_VARIANT := armv8-2a
 TARGET_CPU_ABI := arm64-v8a
 TARGET_CPU_ABI2 :=
-TARGET_CPU_VARIANT := cortex-a73
+TARGET_CPU_VARIANT := cortex-a76
 
 TARGET_2ND_ARCH := arm
-TARGET_2ND_ARCH_VARIANT := armv8-a
+TARGET_2ND_ARCH_VARIANT := armv8-2a
 TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
-TARGET_2ND_CPU_VARIANT := cortex-a73
+TARGET_2ND_CPU_VARIANT := cortex-a55
 
 TARGET_SUPPORTS_64_BIT_APPS := true
+TARGET_IS_64_BIT := true
 ENABLE_CPUSETS := true
 ENABLE_SCHEDBOOST := true
 
@@ -54,8 +57,6 @@ BOARD_KERNEL_SECOND_OFFSET := 0x00000000
 BOARD_RAMDISK_OFFSET       := 0x01000000
 BOARD_DTB_OFFSET           := 0x01f00000
 TARGET_KERNEL_ARCH := arm64
-TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel
-BOARD_PREBUILT_DTBOIMAGE := $(DEVICE_PATH)/prebuilt/dtbo
 BOARD_INCLUDE_RECOVERY_DTBO := true
 BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 BOARD_MKBOOTIMG_ARGS += --base $(BOARD_KERNEL_BASE)
@@ -66,7 +67,20 @@ BOARD_MKBOOTIMG_ARGS += --kernel_offset $(BOARD_KERNEL_OFFSET)
 BOARD_MKBOOTIMG_ARGS += --second_offset $(BOARD_KERNEL_SECOND_OFFSET)
 BOARD_MKBOOTIMG_ARGS += --dtb_offset $(BOARD_DTB_OFFSET)
 BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOT_HEADER_VERSION)
-BOARD_PREBUILT_DTBIMAGE_DIR := $(DEVICE_PATH)/prebuilt/dtb
+
+KERNEL_PATH := $(DEVICE_PATH)/prebuilt
+
+ifeq ($(FOX_VARIANT),MIUI)
+# MIUI kernel from vayu_global_images_V12.5.4.0.RJUMIXM_20210818.0000.00_11.0_global
+   KERNEL_PATH := $(DEVICE_PATH)/prebuilt/miui
+   TARGET_PREBUILT_KERNEL := $(KERNEL_PATH)/Image
+   BOARD_PREBUILT_DTBOIMAGE := $(KERNEL_PATH)/dtbo.img
+   BOARD_PREBUILT_DTBIMAGE_DIR := $(KERNEL_PATH)/dtbs
+else
+   TARGET_PREBUILT_KERNEL := $(KERNEL_PATH)/Image.gz-dtb
+   BOARD_PREBUILT_DTBOIMAGE := $(KERNEL_PATH)/dtbo.img
+   BOARD_PREBUILT_DTBIMAGE_DIR := $(KERNEL_PATH)/dtbs
+endif
 
 # Avb
 BOARD_AVB_ENABLE := true
@@ -75,7 +89,8 @@ BOARD_AVB_RECOVERY_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
 BOARD_AVB_RECOVERY_ALGORITHM := SHA256_RSA4096
 BOARD_AVB_RECOVERY_ROLLBACK_INDEX := 1
 BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 1
-BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flag 2
+BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --set_hashtree_disabled_flag
+BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 3
 
 # Partitions
 BOARD_FLASH_BLOCK_SIZE := 262144
@@ -103,3 +118,19 @@ BOARD_HAS_LARGE_FILESYSTEM := true
 # Crypto
 BOARD_USES_QCOM_FBE_DECRYPTION := true
 BOARD_USES_METADATA_PARTITION := true
+
+# drift/offset
+TW_QCOM_ATS_OFFSET := 1617714502203
+#
+# cure for "ELF binaries" problems
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
+
+# deal with "error: overriding commands for target" problems
+BUILD_BROKEN_DUP_RULES := true
+BUILD_BROKEN_MISSING_REQUIRED_MODULES := true
+
+TW_INCLUDE_PYTHON := true
+
+# frame rate
+TW_FRAMERATE := 90
+#
